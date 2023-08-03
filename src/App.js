@@ -47,6 +47,7 @@ async function sendMessagesToTelegram( message) {
     console.log('User:', user.telegram);
     console.log(user.telegram);
     sendMessageToTelegram(user.telegram, message)
+    console.log("called after");
 
   });
 }
