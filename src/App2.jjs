@@ -1,0 +1,152 @@
+import { DataQuery } from '@dhis2/app-runtime'
+import i18n from '@dhis2/d2-i18n'
+import React from 'react'
+import classes from './App.module.css'
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useDataQuery, useDataMutation } from '@dhis2/app-runtime'
+import { fetchUsers } from './dhis2Api';
+
+const query = {
+    me: {
+        resource: 'me',
+    },
+}
+
+
+// Telegram Bot API endpoint for sending messages
+const telegramAPIEndpoint = 'https://api.telegram.org/bot6393466642:AAGr_SRJA23ev5m_vRWRlp7HjYJqcAZIa_c/sendMessage';
+
+// Function to send a message to Telegram
+async function sendMessageToTelegram(chatId, message) {
+  try {
+    const response = await axios.post(telegramAPIEndpoint, {
+      chat_id: chatId,
+      text: message
+    });
+
+    console.log('Message sent to Telegram:', response.data);
+  } catch (error) {
+    console.error('Error sending message to Telegram:', error);
+  }
+}
+
+// Usage example
+const chatId = '6051915063'; // Replace with the desired chat ID
+const message = 'Hello, Telegram!'; // Replace with your message
+
+sendMessageToTelegram(chatId, message);
+
+/* const USERS_IN_GROUP_QUERY = {
+    ous: {
+        resource: 'users.json',
+        params: () => ({
+            paging: false,
+            fields: "phoneNumber"
+        })
+    }
+}
+ */
+// export const useUsersInGroupPhoneNumbers = (ids) => useDataQuery(USERS_IN_GROUP_QUERY, {
+//     lazy:true, variables: ids 
+// }) */
+//useUsersInGroupPhoneNumbers(33);
+
+/*  const _MyApp = () => (
+    
+    <div className={classes.container}>
+        <DataQuery query={query}>
+            {({ error, loading, data }) => {
+                if (error) {
+                    return <span>ERROR</span>
+                }
+                if (loading) {
+                    return <span>...</span>
+                }
+                return (
+                    <>
+                        <h1>
+                            {i18n.t('Hello {{name}}', { name: data.me.name })}
+                        </h1>
+                        <h1>
+                        {(1+3)}
+                        </h1>
+                        <h3>{i18n.t('Welcome to DHIS2!')}</h3>
+                    </>
+                )
+            }}
+        </DataQuery>
+    </div>
+)  */
+
+const  MyApp = () => {
+
+    console.log('Mounted app..')
+
+    useEffect(() => {
+        const getUsers = async () => {
+            console.log("userd");
+
+          try {
+            const usersData = await fetchUsers();
+            console.log("userd");
+            console.log(usersData);
+            setUsers(usersData);
+          } catch (error) {
+            // Handle error if needed
+          }
+        };
+    
+        getUsers();
+      }, []);
+    
+
+
+
+ /*    const useUsersInGroupPhoneNumbers = (ids) => useDataQuery(USERS_IN_GROUP_QUERY, {
+             lazy:true, variables: []
+        });
+        console.log('Mounted app.njjjjjjj.')
+
+    const {
+        data,
+        refetch 
+    } = useDataQuery(USERS_IN_GROUP_QUERY, {
+            lazy:true, variables: []
+       });
+  
+    //  const {
+    //     data,
+    //     refetch 
+    // } = useUsersInGroupPhoneNumbers("selectedUserGroups")
+    console.log({ data, refetch })
+ */
+    return (
+    
+        <div className={classes.container}>
+            <DataQuery query={query}>
+                {({ error, loading, data }) => {
+                    if (error) {
+                        return <span>ERROR</span>
+                    }
+                    if (loading) {
+                        return <span>...</span>
+                    }
+                    return (
+                        <>
+                            <h1>
+                                {i18n.t('Hello {{name}}', { name: data.me.name })}
+                            </h1>
+                            <h1>
+                            {(1+3)}
+                            </h1>
+                            <h3>{i18n.t('Welcome to DHIS2!')}</h3>
+                        </>
+                    )
+                }}
+            </DataQuery>
+        </div>
+    )
+} 
+
+export default MyApp
