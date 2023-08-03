@@ -18,16 +18,9 @@ const MyApp = () => {
       }
     };
 
-
-
-
     getUsersWithProfile();
-    users.forEach((user) => {
-      console.log('User:', user.telegram);
-      console.log(user.telegram);
-      sendMessageToTelegram(user.telegram, "message to telegram")
 
-    });
+    
   }, []);
 
 // Telegram Bot API endpoint for sending messages
@@ -48,6 +41,16 @@ async function sendMessageToTelegram(chatId, message) {
   }
 }
 
+// Function to send a message to Telegram
+async function sendMessagesToTelegram( message) {
+  users.forEach((user) => {
+    console.log('User:', user.telegram);
+    console.log(user.telegram);
+    sendMessageToTelegram(user.telegram, message)
+
+  });
+}
+
 
 
 
@@ -60,6 +63,9 @@ async function sendMessageToTelegram(chatId, message) {
           user.telegram
         ))}
       </ul>
+      <button onClick={() => sendMessagesToTelegram('Your Telegram message here')}>
+              Send Telegram Message
+            </button>
     </div>
   );
 };
