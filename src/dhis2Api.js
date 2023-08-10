@@ -4,6 +4,8 @@ import axios from 'axios';
 
 // Replace these with your DHIS2 instance URL and credentials
 const DHIS2_BASE_URL = 'http://localhost:8080/api';
+const DHIS2_BASE_URL_PLAY = 'https://play.dhis2.org/40.0.1/api';
+
 const USERNAME = 'admin';
 const PASSWORD = 'district';
 
@@ -37,14 +39,17 @@ export const fetchUsersWithProfile = async () => {
 // Function to fetch monthly reports from DHIS2
 export const fetchMonthlyReports = async (dataElementCodes, periodType, year) => {
     try {
-      const response = await axios.get(`${DHIS2_BASE_URL}/analytics`, {
+      //https://play.dhis2.org/40.0.1/api/analytics.json?dimension=dx:fbfJHSPpUQD;cYeuwXTCPkU&filter=pe:2023Q3
+      const response = await axios.get(`${DHIS2_BASE_URL_PLAY}/analytics`, {
         auth: {
           username: USERNAME,
           password: PASSWORD,
         },
         params: {
-          dimension: `dx:${dataElementCodes.join(';')}`,
-          filter: `pe:${periodType}${year}`,
+          dimension: `dx:${dataElementCodes}`,
+//          filter: `pe:${periodType}${year}`,
+          filter: `pe:${periodType}`,
+
           displayProperty: 'NAME',
         },
       });
@@ -54,4 +59,29 @@ export const fetchMonthlyReports = async (dataElementCodes, periodType, year) =>
       console.error('Error fetching monthly reports:', error);
       throw error;
     }
+}
+
+
+// Function to fetch monthly reports from DHIS2
+export const fetchMonthlyReports2 = async (dataElementCodes, periodType, year) => {
+  try {
+    const response = await axios.get(`${DHIS2_BASE_URL_PLAY}/analytics`, {
+      auth: {
+        username: USERNAME,
+        password: PASSWORD,
+      },
+      params: {
+        dimension: `dx:${'DE_359596:DE_359596'.join(';')}`,
+        filter: `pe:${periodType}${year}`,
+        tableLayout: true,
+        columns:`dx`,
+        displayProperty: 'NAME',
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching monthly reports:', error);
+    throw error;
+  }
 }

@@ -16,6 +16,8 @@
   "dependencies": {
     "@dhis2/app-runtime": "^3.9.4",
     "axios": "^1.4.0",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "json2csv": "^6.0.0-alpha.2",
+    "papaparse": "^5.4.1"
   }
 }
