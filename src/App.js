@@ -1,98 +1,115 @@
-// MyApp.js
-
-import React, { useEffect, useState } from 'react';
-import { fetchUsersWithProfile, fetchMonthlyReports } from './dhis2Api';
-import { generateCSV } from './jsonToCsv2';
-
+import React, { useState, useEffect } from 'react';
+import { useDataQuery } from '@dhis2/app-runtime';
+import { useDataEngine } from '@dhis2/app-runtime'
 import axios from 'axios'
 
-const MyApp = () => {
-  const [users, setUsers] = useState([]);
+const DatasetSelector = () => {
+  const datasetQuery = {
+    datasets: {
+      resource: 'dataSets',
+      params: {
+        fields: 'id,displayName',
+      },
+    },
+  };
+
+  const organizationQuery = {
+    resource: 'organisationUnits',
+    params: {
+      fields: 'id,name',
+      paging: 'false',
+    },
+  };
+
+  const orgUnitQuery = {
+    orgUnit: {
+        resource: 'organisationUnits',
+        params: {
+            fields: ['id,displayName']
+        }
+    }
+}
+  const dataValueSetQuery = (datasetId,orgUnit) => ({
+    dataValueSets: {
+      resource: 'dataValueSets.csv',
+      params: {
+        dataSet: datasetId,
+        orgUnit:orgUnit,
+        startDate: '2018-01-01',
+        endDate: '2023-10-01',
+        paging: false,
+      },
+    },
+  });
+
+  const { loading: datasetLoading, error: datasetError, data: datasetData } = useDataQuery(datasetQuery);
+  const { loading:loading, error: error, data: orgData } = useDataQuery(orgUnitQuery);
+
+  const { loading: datavalesetLoading, error: datavaluesetError, data: datavluesetData } = useDataQuery(datasetQuery);
+  const engine = useDataEngine()
+
+  const [selectedDataset, setSelectedDataset] = useState(null);
+  const [dataValueSets, setDataValueSets] = useState([]);
+
+
+
+  const [selectedOrganization, setSelectedOrganization] = useState('');
+
+
+
+
+const ben= useDataQuery(orgUnitQuery);
+
+console.log("sdfghjjjjjj")
+console.log(orgData)
+console.log(ben)
+
+  const handleOrganizationChange = (event) => {
+    
+    console.log("org what")
+
+    setSelectedOrganization(event.target.value);
+    console.log("called48884")
+
+    console.log(event.target.value);
+  };
 
   useEffect(() => {
-    const getUsersWithProfile = async () => {
-      try {
-        const usersData = await fetchUsersWithProfile();
-        console.log('usersData:', usersData);
-        setUsers(usersData);
-      } catch (error) {
-        console.error('Error fetching users with profile:', error);
-      }
-    };
+    if (selectedDataset) {
+      console.log("called444")
 
-    getUsersWithProfile();
-    sendFileToTelegram();
+//      const dataValueSetQueryObj = dataValueSetQuery(selectedDataset);
+
+    
+      //fetchDataValueSets(dataValueSetQueryObj);
 
 
+      if (selectedDataset && selectedOrganization) {
+        //setLoading(true)
+        const dataValueSetQueryObj = dataValueSetQuery(selectedDataset, selectedOrganization);
 
-  }, []);
-
-  // Telegram Bot API endpoint for sending messages
-  const telegramAPIEndpoint =
-    'https://api.telegram.org/bot6393466642:AAGr_SRJA23ev5m_vRWRlp7HjYJqcAZIa_c/sendMessage'
-
-    // Telegram Bot API endpoint for sending messages
-  const telegramDocAPIEndpoint =
-  'https://api.telegram.org/bot6393466642:AAGr_SRJA23ev5m_vRWRlp7HjYJqcAZIa_c/sendDocument'
-
-  // Function to send a message to Telegram
-  async function sendMessageToTelegram(chatId, message) {
-    try {
-      const response = await axios.post(telegramAPIEndpoint, {
-        chat_id: chatId,
-        text: message,
-      })
-
-      console.log('Message sent to Telegram:', response.data)
-
-    } catch (error) {
-      console.error('Error sending message to Telegram:', error)
-    }
-  }
-
-  // Function to send a message to Telegram
-  async function sendMessagesToTelegram(message) {
-
-    //https://play.dhis2.org/40.0.1/api/analytics.json?dimension=dx:fbfJHSPpUQD;cYeuwXTCPkU&filter=pe:2023Q3
-    fetchMonthlyReports("fbfJHSPpUQD;cYeuwXTCPkU", "2023Q3", "year")
-      .then((monthlyReports) => {
-        console.log('Monthly Reports for Past 5 Years:', monthlyReports);
-        generateCSV(monthlyReports)
-        sendFileToTelegram();
-      })
-      .catch((error) => {
-        console.error('Error fetching monthly reports:', error);
-      });
-    users.forEach((user) => {
-      console.log('User:', user.telegram);
-      console.log(user.telegram);
-      sendMessageToTelegram(user.telegram, message)
-      console.log("called after");
-
-    });
-  }
-
-  async function sendFileToTelegram() {
-    console.log("callleddddd");
+        engine.query(dataValueSetQueryObj).then((response) => {
+          console.log("benhiiii")
+          console.log(response)
 
 
-    const fileName = 'generated_file.txt'; // The desired file name
-    const fileContent = 'This is the content of the generated file.'; // Replace with your desired content
 
-    // Create a Blob with the file content
-    const blob = new Blob([fileContent], { type: 'text/plain' });
+
+
 
     // Create a FormData instance to send the Blob
     const formData = new FormData();
-    formData.append('document', blob, fileName);
+    formData.append('document', response.dataValueSets, "fileName");
 
     try {
       const chatId = '6051915063' // Replace with the desired chat ID
-
-      const fileUrl = 'locations.csv'; // Replace with the URL of the file you want to send
+      const telegramDocAPIEndpoint =
+      'https://api.telegram.org/bot6393466642:AAGr_SRJA23ev5m_vRWRlp7HjYJqcAZIa_c/sendDocument'
+    
+      //const fileUrl = 'locations.csv'; // Replace with the URL of the file you want to send
       const caption = 'Caption for the file (optional)';
 
-      const response = await axios.post(telegramDocAPIEndpoint, formData, {
+      const response =  axios.post(telegramDocAPIEndpoint, formData, {
         
         params: {chat_id: chatId,
        // document: formData,
@@ -110,21 +127,102 @@ const MyApp = () => {
       console.error('Error sending file to Telegram')
 
     }
+
+
+
+          //const { displayName } = response.dataValueSets.dataValues;
+          
+         // setFormulaDataElementName(displayName)
+      })
+    //  .finally(() => setLoading(false));
+
+
+       /*  engine
+            .query(DATA_ELEMENTS_QUERY, {
+                variables: { id: dataElementId },
+            })
+            .then((response) => {
+                const { displayName } = response.dataElement
+                setFormulaDataElementName(displayName)
+            })
+            .finally(() => setLoading(false)) */
+    }
+
+   
+    }
+  }, [selectedDataset,selectedOrganization]);
+
+  const handleDatasetChange = (event) => {
+    const datasetId = event.target.value;
+    console.log(datasetId)
+    setSelectedDataset(datasetId);
+
+   /*  const dataValueSetQueryObj = dataValueSetQuery(datasetId);
+
+
+    const { loading, error, data } = useDataQuery(dataValueSetQueryObj);
+    if (!loading && !error && data && data.dataValueSets) {
+      setDataValueSets(data.dataValueSets);
+    } */
+  };
+console.log(datasetData ?datasetData.datasets.dataSets:'jjj');
+
+
+const fetchDataValueSets = async (queryObj) => {
+  console.log(
+    "dddd"
+  )
+  const { loading, error, data } = useDataQuery(queryObj);
+
+  try {
+    const { loading, error, data } = useDataQuery(queryObj);
+console.log(data)
+    if (!loading && !error && data && data.dataValueSets) {
+      setDataValueSets(data.dataValueSets);
+    }
+  } catch (error) {
+    console.error('Error fetching data value sets:', error);
   }
+};
   return (
     <div>
-      <h1>Users with Profile</h1>
-      <ul>
-        {users.map((user) => (
+      <h3>Select a Dataset</h3>
+      {datasetLoading && <span>Loading datasets...</span>}
+      {datasetError && <span>{`ERROR: ${datasetError.message}`}</span>}
+      {datasetData && datasetData.datasets.dataSets ? (
+        <>
+          <select onChange={handleDatasetChange}>
+            <option value="">Select a dataset</option>
+            {datasetData.datasets.dataSets.map((dataset) => (
+              <option key={dataset.id} value={dataset.id}>
+                {dataset.displayName}
+              </option>
+            ))}
+          </select>
 
-          user.telegram
+        </>
+      ) : (
+        <span>No datasets available.</span>
+      )}
+
+<h3>Select an org</h3>
+{orgData && orgData.orgUnit.organisationUnits ? (
+
+<div>
+      <select value={selectedOrganization} onChange={handleOrganizationChange}>
+        <option value="">Select an organization</option>
+        {orgData.orgUnit.organisationUnits.map((organization) => (
+          <option key={organization.id} value={organization.id}>
+            {organization.displayName}
+          </option>
         ))}
-      </ul>
-      <button onClick={() => sendMessagesToTelegram('Sent by reagan meantex latest')}>
-        Send Telegram Message
-      </button>
+      </select>
+    </div>):     (   <span>No orgs available.</span>)}
+
+
     </div>
   );
 };
 
-export default MyApp;
+export default DatasetSelector;
+
