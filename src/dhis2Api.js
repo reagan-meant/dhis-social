@@ -39,8 +39,8 @@ export const fetchMonthlyReports = async (dataElementCodes, periodType, year) =>
     try {
       const response = await axios.get(`${DHIS2_BASE_URL}/analytics`, {
         auth: {
-          username: USERNAME,
-          password: PASSWORD,
+          username,
+          password
         },
         params: {
           dimension: `dx:${dataElementCodes.join(';')}`,
