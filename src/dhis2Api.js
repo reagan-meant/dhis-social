@@ -42,8 +42,8 @@ export const fetchMonthlyReports = async (dataElementCodes, periodType, year) =>
       //https://play.dhis2.org/40.0.1/api/analytics.json?dimension=dx:fbfJHSPpUQD;cYeuwXTCPkU&filter=pe:2023Q3
       const response = await axios.get(`${DHIS2_BASE_URL_PLAY}/analytics`, {
         auth: {
-          username: USERNAME,
-          password: PASSWORD,
+          username,
+          password
         },
         params: {
           dimension: `dx:${dataElementCodes}`,
